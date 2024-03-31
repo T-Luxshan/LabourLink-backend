@@ -20,17 +20,14 @@ import java.util.List;
 @Builder
 public class User implements UserDetails {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userID;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Integer userID;
 
     @NotBlank(message = "Field can not be empty")
     private String name;
 
-    @NotBlank(message = "Field can not be empty")
-    @Column(unique = true)
-    private String userName;
-
+    @Id
     @NotBlank(message = "Field can not be empty")
     @Column(unique = true)
     @Email(message = "Please enter valid email")
@@ -39,6 +36,19 @@ public class User implements UserDetails {
     @NotBlank(message = "Field can not be empty")
     @Size(min = 5, message = "The password must have at least 5 characters")
     private String password;
+
+//    @NotBlank(message = "Field can not be empty")
+    @Column(unique = true)
+    private String mobileNumber;
+
+
+    private String address;
+
+    @Column(unique = true)
+    private String nic;
+
+    @ElementCollection
+    private List<String> jobRole;
 
     @OneToOne(mappedBy = "user")
     private RefreshToken refreshToken;

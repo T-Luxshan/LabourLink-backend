@@ -1,6 +1,7 @@
 package com.luxshan.authentication.auth.entity;
 
 public enum UserRole {
-    USER,
+    CUSTOMER,
+    LABOUR,
     ADMIN
 }

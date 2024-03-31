@@ -2,6 +2,7 @@ package com.luxshan.authentication.auth.controller;
 
 import com.luxshan.authentication.auth.entity.RefreshToken;
 import com.luxshan.authentication.auth.entity.User;
+import com.luxshan.authentication.auth.entity.UserRole;
 import com.luxshan.authentication.auth.service.AuthService;
 import com.luxshan.authentication.auth.service.JwtService;
 import com.luxshan.authentication.auth.service.RefreshTokenService;
@@ -10,10 +11,7 @@ import com.luxshan.authentication.auth.utils.LoginRequest;
 import com.luxshan.authentication.auth.utils.RefreshTokenRequest;
 import com.luxshan.authentication.auth.utils.RegisterRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth/")
@@ -29,9 +27,9 @@ public class AuthController {
         this.refreshTokenService = refreshTokenService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest registerRequest){
-        return ResponseEntity.ok(authService.register(registerRequest));
+    @PostMapping("/register/{role}")
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest registerRequest, @PathVariable UserRole role){
+        return ResponseEntity.ok(authService.register(registerRequest, role));
     }
 
     @PostMapping("/login")
