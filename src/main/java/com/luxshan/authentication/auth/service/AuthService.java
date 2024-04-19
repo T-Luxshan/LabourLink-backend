@@ -24,39 +24,31 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest registerRequest, UserRole role){
-        User user = null;
-        switch (role){
-            case CUSTOMER:
-                 user = User.builder()
-                        .name(registerRequest.getName())
-                        .email(registerRequest.getEmail())
-                        .password(passwordEncoder.encode(registerRequest.getPassword()))
-                        .address(registerRequest.getAddress())
-                        .mobileNumber(registerRequest.getMobileNumber())
-                        .role(UserRole.CUSTOMER)
-                        .build();
-                break;
-            case LABOUR:
-                 user = User.builder()
-                        .name(registerRequest.getName())
-                        .email(registerRequest.getEmail())
-                        .password(passwordEncoder.encode(registerRequest.getPassword()))
-                        .mobileNumber(registerRequest.getMobileNumber())
-                        .nic(registerRequest.getNic())
-                        .role(UserRole.LABOUR)
-                        .build();
-                 break;
-            case ADMIN:
-                user = User.builder()
-                        .name(registerRequest.getName())
-                        .email(registerRequest.getEmail())
-                        .password(passwordEncoder.encode(registerRequest.getPassword()))
-                        .mobileNumber(registerRequest.getMobileNumber())
-                        .role(UserRole.ADMIN)
-                        .build();
-                break;
-
-        }
+        User user = switch (role) {
+            case CUSTOMER -> User.builder()
+                    .name(registerRequest.getName())
+                    .email(registerRequest.getEmail())
+                    .password(passwordEncoder.encode(registerRequest.getPassword()))
+                    .address(registerRequest.getAddress())
+                    .mobileNumber(registerRequest.getMobileNumber())
+                    .role(UserRole.CUSTOMER)
+                    .build();
+            case LABOUR -> User.builder()
+                    .name(registerRequest.getName())
+                    .email(registerRequest.getEmail())
+                    .password(passwordEncoder.encode(registerRequest.getPassword()))
+                    .mobileNumber(registerRequest.getMobileNumber())
+                    .nic(registerRequest.getNic())
+                    .role(UserRole.LABOUR)
+                    .build();
+            case ADMIN -> User.builder()
+                    .name(registerRequest.getName())
+                    .email(registerRequest.getEmail())
+                    .password(passwordEncoder.encode(registerRequest.getPassword()))
+                    .mobileNumber(registerRequest.getMobileNumber())
+                    .role(UserRole.ADMIN)
+                    .build();
+        };
 
 
         User savedUser = userRepository.save(user);
