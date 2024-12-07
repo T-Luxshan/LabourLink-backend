@@ -1,61 +1,73 @@
-name: CI/CD Pipeline for Spring Boot
+name: CI/CD Pipeline for Spring Boot with MySQL
 
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
+      - main
   pull_request:
     branches:
-      - dev # Trigger on pull requests targeting the dev branch
-  workflow_dispatch: # Allow manual triggers
-
-permissions:
-  contents: read
-  id-token: write
+      - dev
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
-      # Step 1: Checkout the code
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up JDK
+      # Step 2: Set up Java
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '17'        # Specify Java version
-          distribution: 'temurin'   # Specify JDK distribution (temurin is reliable)
-          cache: 'maven'            # Cache Maven dependencies
+          java-version: '17'
+          distribution: 'temurin'
 
-      # Step 3: Cache Maven dependencies
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-m2
-
-      # Step 4: Build the application
-      - name: Build with Maven
-        run: mvn clean package
-
-      # Step 5: Run unit tests
-      - name: Run unit tests
-        run: mvn test
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      # Step 1: Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Step 2: Deploy the application
-      # Replace the deployment logic with specific steps for your environment
-      - name: Deploy to Production
+      # Step 3: Wait for MySQL to become healthy
+      - name: Wait for MySQL
         run: |
-          echo "Deployment commands go here"
+          for i in {1..10}; do
+            if mysqladmin ping -h 127.0.0.1 -u root -proot > /dev/null 2>&1; then
+              echo "MySQL is up and running!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 5
+          done
+
+      # Step 4: Set up database connection in application.properties
+      - name: Configure application properties
+        run: |
+          echo "spring.datasource.url=jdbc:mysql://localhost:3306/testdb" > src/main/resources/application.properties
+          echo "spring.datasource.username=root" >> src/main/resources/application.properties
+          echo "spring.datasource.password=root" >> src/main/resources/application.properties
+          echo "spring.jpa.hibernate.ddl-auto=update" >> src/main/resources/application.properties
+
+      # Step 5: Build and Test
+      - name: Build and Test
+        run: |
+          mvn clean package
+          mvn test
+
+      # Optional: Upload build artifact (e.g., JAR file)
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: spring-boot-app
+          path: target/*.jar
